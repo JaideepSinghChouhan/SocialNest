@@ -1,4 +1,4 @@
-import User from '../models/User.js';
+import { User } from '../models/User.js';
 import asyncHandler from 'express-async-handler';
 // Follow user
 export const followUser = async (req, res) => {

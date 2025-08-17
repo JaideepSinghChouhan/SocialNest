@@ -65,9 +65,11 @@ const PostCard = ({ post, currentUser, onPostDeleted, hideFollowButton = false }
   const isLiked = likes.includes(currentUser._id);
   const isOwner = post.user?._id === currentUser._id;
 
+
   const [isFollowing, setIsFollowing] = useState(
-    post.user?.followers?.includes(currentUser._id)
+    currentUser?.following?.includes(post.user._id) || false
   );
+  
 
   const toggleFollow = async () => {
     try {

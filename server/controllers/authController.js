@@ -1,6 +1,25 @@
-import User from '../models/User.js';
+import { User } from '../models/User.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+
+
+const generateAccessAndRefereshTokens = async(userId) =>{
+    try {
+        const user = await User.findById(userId)
+        // console.log("User found for token generation:", user);
+        const accessToken = user.generateAccessToken()
+        const refreshToken = user.generateRefreshToken()
+        user.refreshToken = refreshToken
+        await user.save()
+
+        return {accessToken, refreshToken}
+
+
+    } catch (error) {
+        throw new Error("Something went wrong while generating refresh and access token")
+    }
+}
+
 
 // Register User
 export const registerUser = async (req, res) => {
@@ -39,7 +58,7 @@ export const loginUser = async (req, res) => {
     if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
 
     // Generate JWT
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    // const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
     // const localStorage = globalThis.localStorage || {}; // Fallback for server-side
     // if (!localStorage.setItem) {
     //   localStorage.setItem = (key, value) => {
@@ -47,9 +66,68 @@ export const loginUser = async (req, res) => {
     //   }; 
     // }
     // localStorage.setItem("token", token);
+  const {accessToken, refreshToken} = await generateAccessAndRefereshTokens(user._id)
 
-    res.status(200).json({ token, user: { id: user._id, username: user.username, email: user.email } });
+    const loggedInUser = await User.findById(user._id)
+    .select("-password -refreshToken")
+
+     const options = {
+        httpOnly: true,
+        secure: true
+    }
+
+
+    res.
+    status(200)
+    .cookie("refreshToken", refreshToken, options)
+    .cookie("accessToken", accessToken, options)
+    .json(
+      { 
+        user: loggedInUser,
+        accessToken,
+        refreshToken
+      }
+    );
   } catch (err) { 
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
+
+export const refreshAccessToken = async(req,res)=>{
+  const incomingRefreshToken= req.cookies.refreshToken || req.body.refreshToken;
+
+  if(!incomingRefreshToken) return res.status(401).json({ message: 'Refresh token is required' });
+
+  try {
+    const decodedToken = jwt.verify(
+      incomingRefreshToken,
+      process.env.REFRESH_TOKEN_SECRET,
+    )
+    const user =await User.findById(decodedToken?.id);
+    if(!user){
+      throw new Error('Invalid refresh token');
+    }
+    if(incomingRefreshToken!=user?.refreshToken){
+            throw new Error("Invalid refresh token")
+        }
+
+     const options = {
+        httpOnly: true,
+        secure: true
+    }
+    const {accessToken,refreshToken: newRefreshToken}=await generateAccessAndRefereshTokens(user._id)
+    return res
+    .status(200)
+    .cookie("accessToken",accessToken,options)
+    .cookie("refreshToken",newRefreshToken,options)
+    .json(
+        {
+          accessToken,
+          refreshToken: newRefreshToken
+        }
+    )
+
+  } catch (err) {
+    res.status(500).json({ message: 'Error refreshing the access token', error: err.message });
+  }
+}

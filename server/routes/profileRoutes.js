@@ -3,7 +3,7 @@ import { getMyProfile, updateMyProfile, getUserProfileById, uploadAvatar, upload
 
 import { protect } from '../middlewares/authMiddleware.js';
 import upload from '../middlewares/uploadMiddleware.js';
-import User from '../models/User.js';
+import { User } from '../models/User.js';
 
 const router = express.Router();
 

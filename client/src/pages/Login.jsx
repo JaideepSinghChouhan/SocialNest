@@ -12,10 +12,10 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await API.post("/auth/login", { email, password });
-      console.log("Login response:", res.data);
+      const res = await API.post("/auth/login", { email, password },{ withCredentials: true });
+      // console.log("Login response:", res.data);
 
-      login({ userData: res.data.user, token: res.data.token });
+      login({ userData: res.data.user});
       navigate("/");
     } catch (err) {
       console.error(err.response?.data?.message || "Login failed");
