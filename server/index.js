@@ -19,18 +19,19 @@ connectDB();
 const app = express();
 app.use(cookieParser());
 
-app.use(cors({
+app.use(
+  cors({
     origin: function (origin, callback) {
-      // allow requests with no origin (like mobile apps or curl)
-      if (!origin) return callback(null, true);
+      if (!origin) return callback(null, true); // allow server-to-server / tools like Postman
       if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
+        callback(null, true);
       } else {
-        return callback(new Error("Not allowed by CORS"));
+        callback(new Error("Not allowed by CORS"));
       }
     },
-    credentials: true, // important for cookies / JWT
-  }));
+    credentials: true, // ✅ Important for cookie-based auth
+  })
+);
 
 app.use(express.json());
 
