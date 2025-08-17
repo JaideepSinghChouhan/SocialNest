@@ -9,8 +9,8 @@ import postRoutes from './routes/postRoutes.js';
 import cookieParser from "cookie-parser"
 
 const allowedOrigins = [
+  "https://social-nest-six.vercel.app", // Deployed frontend
   "http://localhost:5173",   // Dev frontend
-  "https://social-nest-six.vercel.app" // Deployed frontend
 ];
 
 dotenv.config();
