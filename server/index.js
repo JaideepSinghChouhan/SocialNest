@@ -7,7 +7,7 @@ import authRoutes from './routes/authRoutes.js';
 import profileRoutes from './routes/profileRoutes.js';
 import postRoutes from './routes/postRoutes.js';
 import cookieParser from "cookie-parser"
-import { applyCors } from './middlewares/corsMiddleware.js';
+import applyCors  from './middlewares/corsMiddleware.js';
 
 const allowedOrigins = [
   "https://social-nest-six.vercel.app", // Deployed frontend

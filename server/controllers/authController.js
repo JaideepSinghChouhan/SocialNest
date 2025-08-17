@@ -1,6 +1,7 @@
 import { User } from '../models/User.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import applyCors from '../middlewares/corsMiddleware.js';
 
 
 const generateAccessAndRefereshTokens = async(userId) =>{
@@ -46,6 +47,11 @@ export const registerUser = async (req, res) => {
 
 // Login User
 export const loginUser = async (req, res) => {
+  app.use((req, res, next) => {
+  if (!applyCors(req, res)) {
+    next();
+  }
+  });
   try {
     const { email, password } = req.body;
     
