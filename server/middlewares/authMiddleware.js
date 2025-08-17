@@ -4,7 +4,6 @@ import { User } from '../models/User.js';
 
 export const protect = async (req, res, next) => {
 
-  if (applyCors(req, res)) return;
   let token;
 
 if (req.cookies?.accessToken) {

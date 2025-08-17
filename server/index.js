@@ -7,39 +7,32 @@ import authRoutes from './routes/authRoutes.js';
 import profileRoutes from './routes/profileRoutes.js';
 import postRoutes from './routes/postRoutes.js';
 import cookieParser from "cookie-parser"
-import applyCors  from './middlewares/corsMiddleware.js';
 
-const allowedOrigins = [
-  "https://social-nest-six.vercel.app", // Deployed frontend
-  "http://localhost:5173",   // Dev frontend
-];
 
 dotenv.config();
 connectDB();
-
 const app = express();
 
-app.use((req, res, next) => {
-  if (!applyCors(req, res)) {
-    next();
-  }
-});
-
-app.use(cookieParser());
+const allowedOrigins = [
+  "https://social-nest-six.vercel.app", // Deployed frontend
+  "http://localhost:5173",              // Dev frontend
+];
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin) return callback(null, true); // allow server-to-server / tools like Postman
+      if (!origin) return callback(null, true); // allow Postman / server-to-server
       if (allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
         callback(new Error("Not allowed by CORS"));
       }
     },
-    credentials: true, // ✅ Important for cookie-based auth
+    credentials: true, // ✅ Important for cookies
   })
 );
+
+app.use(cookieParser());
 
 app.use(express.json());
 
