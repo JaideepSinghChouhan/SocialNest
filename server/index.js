@@ -13,24 +13,30 @@ dotenv.config();
 connectDB();
 const app = express();
 
-const allowedOrigins = [
-  "https://social-nest-six.vercel.app", // Deployed frontend
-  "http://localhost:5173",              // Dev frontend
-];
+// const allowedOrigins = [
+//   "https://social-nest-six.vercel.app", // Deployed frontend
+//   "http://localhost:5173",              // Dev frontend
+// ];
 
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, true); // allow Postman / server-to-server
-      if (allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true, // ✅ Important for cookies
-  })
-);
+// app.use(
+//   cors({
+//     origin: function (origin, callback) {
+//       if (!origin) return callback(null, true); // allow Postman / server-to-server
+//       if (allowedOrigins.includes(origin)) {
+//         callback(null, true);
+//       } else {
+//         callback(new Error("Not allowed by CORS"));
+//       }
+//     },
+//     credentials: true, // ✅ Important for cookies
+//   })
+// );
+
+app.use(cors({
+  origin: "https://social-nest-six.vercel.app",
+  // origin: "http://localhost:5173",
+  credentials: true,
+}));
 
 app.use(cookieParser());
 
