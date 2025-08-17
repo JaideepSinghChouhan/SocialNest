@@ -1,9 +1,11 @@
 import jwt from 'jsonwebtoken';
 import { User } from '../models/User.js';
+import { applyCors } from './corsMiddleware.js';
 
 export const protect = async (req, res, next) => {
-  
-let token;
+
+  if (applyCors(req, res)) return;
+  let token;
 
 if (req.cookies?.accessToken) {
   token = req.cookies.accessToken;
