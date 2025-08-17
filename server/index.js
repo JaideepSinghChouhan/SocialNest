@@ -12,13 +12,29 @@ dotenv.config();
 connectDB();
 
 const app = express();
+app.use(express.json());
 
-app.use(cors(
-  {
-    origin: "https://social-nest-six.vercel.app",
-    credentials: true,
+// ✅ Manual CORS headers (Vercel fix)
+app.use((req, res, next) => {
+  const allowedOrigins = [
+    "http://localhost:5173",
+    "https://social-nest-six.vercel.app",
+  ];
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
   }
-));
+
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
+  next();
+});
 
 // Allow both local dev & deployed frontend
 // const allowedOrigins = [
