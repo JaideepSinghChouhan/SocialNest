@@ -75,7 +75,8 @@ export const loginUser = async (req, res) => {
 
      const options = {
         httpOnly: true,
-        secure: true
+        secure: true,
+        sameSite: "none"
     }
 
 
@@ -115,7 +116,8 @@ export const refreshAccessToken = async(req,res)=>{
 
      const options = {
         httpOnly: true,
-        secure: true
+        secure: true,
+        sameSite: "none"
     }
     const {accessToken,refreshToken: newRefreshToken}=await generateAccessAndRefereshTokens(user._id)
     return res
