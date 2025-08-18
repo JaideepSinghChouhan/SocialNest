@@ -27,8 +27,8 @@ app.use(cors({
 }));
 
 // Routes
-app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes); 
 app.use('/api/posts', postRoutes);
 
