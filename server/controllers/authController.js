@@ -75,9 +75,7 @@ export const loginUser = async (req, res) => {
 
      const options = {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-        domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined
+        secure: true
     }
 
 
@@ -117,9 +115,7 @@ export const refreshAccessToken = async(req,res)=>{
 
      const options = {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-        domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined
+        secure: true
     }
     const {accessToken,refreshToken: newRefreshToken}=await generateAccessAndRefereshTokens(user._id)
     return res
@@ -137,36 +133,3 @@ export const refreshAccessToken = async(req,res)=>{
     res.status(500).json({ message: 'Error refreshing the access token', error: err.message });
   }
 }
-
-export const logoutUser = async (req, res) => {
-  try {
-    await User.findByIdAndUpdate(
-      req.user._id,
-      { $unset: { refreshToken: 1 } },
-      { new: true }
-    );
-
-    const options = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
-    };
-
-    return res
-      .status(200)
-      .clearCookie("accessToken", options)
-      .clearCookie("refreshToken", options)
-      .json({ message: "User logged out successfully" });
-  } catch (error) {
-    res.status(500).json({ message: 'Logout failed', error: error.message });
-  }
-};
-
-export const getCurrentUser = async (req, res) => {
-  try {
-    const user = await User.findById(req.user._id).select("-password -refreshToken");
-    res.json({ user });
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to get user', error: error.message });
-  }
-};
