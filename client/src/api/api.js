@@ -3,11 +3,7 @@ import axios from "axios";
 // Create an Axios instance
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
-  withCredentials: true, // allow cookies
-  headers: {
-    'Content-Type': 'application/json'
-    // ❌ Remove "Access-Control-Allow-Credentials"
-  }
+  withCredentials: true
 });
 
 // Response interceptor for handling refresh

@@ -12,7 +12,7 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await API.post("/auth/login", { email, password },{ withCredentials: true });
+      const res = await API.post("/auth/login", { email, password });
       // console.log("Login response:", res.data);
 
       login({ userData: res.data.user});
