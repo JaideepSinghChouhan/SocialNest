@@ -4,7 +4,7 @@ import { User } from '../models/User.js';
 // Get logged-in user profile
 export const getMyProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id)
+    const user = await User.findById(req.user._id)
       .select('-password')
       .populate('posts', 'caption image createdAt')     // Optional: when Post model is added
       .populate('followers', 'username avatar')

@@ -19,7 +19,8 @@ app.use(express.json());
 
 // CORS configuration to allow all origins and all methods
 app.use(cors({
-  origin: "https://social-nest-six.vercel.app",  // frontend URL
+  // origin: "https://social-nest-six.vercel.app",  // frontend URL
+  origin: "http://localhost:5173",
   credentials: true, // allow cookies / auth headers
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],

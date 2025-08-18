@@ -18,7 +18,7 @@ if (req.cookies?.accessToken) {
 
   try {
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-
+      console.log('JWT decoded:', decoded);
       req.user = await User.findById(decoded.id).select('-email -username');
       next();
     } 
