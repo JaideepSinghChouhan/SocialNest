@@ -12,60 +12,18 @@ dotenv.config();
 connectDB();
 
 const app = express();
-app.use(express.json());
-
-// ✅ Manual CORS headers (Vercel fix)
-app.use((req, res, next) => {
-  const allowedOrigins = [
-    "http://localhost:5173",
-    "https://social-nest-six.vercel.app",
-  ];
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-  }
-
-  res.setHeader("Access-Control-Allow-Credentials", "true");
-  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
-
-  next();
-});
-
-// Allow both local dev & deployed frontend
-// const allowedOrigins = [
-//   "http://localhost:5173",      // Vite local frontend
-//   "https://social-nest-six.vercel.app", // Deployed frontend
-//   "https://social-nest-2nns.vercel.app"
-// ];
-
-// app.use(cors({
-//   origin: function(origin, callback) {
-//     if (!origin || allowedOrigins.includes(origin)) {
-//       callback(null, true);
-//     } else {
-//       callback(new Error('Not allowed by CORS'));
-//     }
-//   },
-//   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-//   allowedHeaders: ["Content-Type", "Authorization"],
-//   credentials: true
-// }));
-
-// Handle preflight requests
-// app.options(/.*/, cors({
-//   origin: allowedOrigins,
-//   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-//   allowedHeaders: ["Content-Type", "Authorization"],
-//   credentials: true
-// }));
 
 app.use(cookieParser());
 app.use(express.json());
+
+
+// CORS configuration to allow all origins and all methods
+app.use(cors({
+  origin: "https://social-nest-six.vercel.app",  // frontend URL
+  credentials: true, // allow cookies / auth headers
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 
 // Routes
 app.use('/api/users', userRoutes);
