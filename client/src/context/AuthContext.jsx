@@ -14,9 +14,9 @@ export const AuthProvider = ({ children }) => {
   const checkAuth = async () => {
     try {
       // Try to get user from server using cookie
-      const response = await api.get('/auth/me');
+      const response = await api.get('/profile/me');
       setUser(response.data.user);
-    } catch (error) {
+    } catch (error) { 
       // If server call fails, check localStorage as fallback
       const storedUser = localStorage.getItem("user");
       if (storedUser) {
