@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import api from "../api/api";
 import PostCard from "../components/PostCard";
+import CreatePost from "./CreatePost";
+import { useAuth } from "../context/AuthContext";
 
 // Avatar component with hover effects
 const Avatar = ({ user, size = "xl", className = "" }) => {
@@ -33,9 +35,9 @@ const Avatar = ({ user, size = "xl", className = "" }) => {
 
 const Profile = () => {
   const { username } = useParams();
+  const { user: currentUser } = useAuth();
   
   // State management
-  const [currentUser, setCurrentUser] = useState(null);
   const [profileUser, setProfileUser] = useState(null);
   const [posts, setPosts] = useState([]);
   const [activeTab, setActiveTab] = useState("posts");
@@ -51,10 +53,10 @@ const Profile = () => {
   const [coverImage, setcoverImage] = useState("");
   const [avatar, setAvatar] = useState("");
   
-  // Post composer states
-  const [newPostText, setNewPostText] = useState("");
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [isPosting, setIsPosting] = useState(false);
+  // Post composer states - Remove these as we'll use CreatePost component
+  // const [newPostText, setNewPostText] = useState("");
+  // const [selectedFile, setSelectedFile] = useState(null);
+  // const [isPosting, setIsPosting] = useState(false);
   
   // File upload states for profile images
   const [selectedAvatarFile, setSelectedAvatarFile] = useState(null);
@@ -64,10 +66,6 @@ const Profile = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        // Get current user
-        const meRes = await api.get("/profile/me");
-        setCurrentUser(meRes.data);
-
         // Get profile user by username
         const profileRes = await api.get(`/users/username/${username}`);
         const profileData = profileRes.data;
@@ -82,7 +80,7 @@ const Profile = () => {
         setcoverImage(profileData.coverImage || "");
         
         // Check if current user is following profile user
-        setIsFollowing((profileData.followers || []).includes(meRes.data?._id));
+        setIsFollowing((profileData.followers || []).includes(currentUser?._id));
 
         // Load posts for this user
         const postsRes = await api.get("/posts");
@@ -93,8 +91,10 @@ const Profile = () => {
       }
     };
     
-    loadData();
-  }, [username]);
+    if (currentUser && username) {
+      loadData();
+    }
+  }, [username, currentUser]);
 
   const isOwnProfile = currentUser?._id && profileUser?._id && currentUser._id === profileUser._id;
 
@@ -227,37 +227,25 @@ const Profile = () => {
     setSelectedCoverFile(null);
   };
 
-  // Handle post creation
-  const handleCreatePost = async () => {
-    if (!newPostText.trim() && !selectedFile) return;
-    
-    setIsPosting(true);
-    try {
-      const postData = { caption: newPostText };
-      
-      if (selectedFile) {
-        const formData = new FormData();
-        formData.append("image", selectedFile);
-        formData.append("caption", newPostText);
-        
-        const res = await api.post("/posts/create", formData, {
-          headers: { "Content-Type": "multipart/form-data" }
-        });
-        
-        // Add new post to the beginning of posts array
-        setPosts(prev => [res.data, ...prev]);
-      } else {
-        const res = await api.post("/posts/create", postData);
-        setPosts(prev => [res.data, ...prev]);
+  // Handle post creation callback
+  const handlePostCreated = (newPost) => {
+    // Add the new post to the beginning of posts array
+    setPosts(prev => [newPost, ...prev]);
+  };
+
+  const handlePostDeleted = () => {
+    // Refresh posts after deletion
+    // You could also implement more efficient state updates here
+    const loadPosts = async () => {
+      try {
+        const postsRes = await api.get("/posts");
+        const userPosts = (postsRes.data || []).filter(post => post.user?._id === profileUser._id);
+        setPosts(userPosts);
+      } catch (error) {
+        console.error("Failed to reload posts:", error);
       }
-      
-      setNewPostText("");
-      setSelectedFile(null);
-    } catch (error) {
-      console.error("Failed to create post:", error);
-    } finally {
-      setIsPosting(false);
-    }
+    };
+    loadPosts();
   };
 
   if (!profileUser) {
@@ -492,69 +480,7 @@ const Profile = () => {
             <div className="lg:col-span-2 space-y-6">
               {/* Post Composer - Always show for own profile */}
               {isOwnProfile && (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                  <div className="flex items-start space-x-4">
-                    <Avatar user={currentUser} size="md" />
-                    <div className="flex-1">
-                      <textarea
-                        value={newPostText}
-                        onChange={(e) => setNewPostText(e.target.value)}
-                        placeholder="What's on your mind?"
-                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                        rows={3}
-                      />
-                      
-                      {selectedFile && (
-                        <div className="mt-3 relative">
-                          <img 
-                            src={URL.createObjectURL(selectedFile)} 
-                            alt="Preview" 
-                            className="w-full max-h-64 object-cover rounded-lg"
-                          />
-                          <button
-                            onClick={() => setSelectedFile(null)}
-                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition-colors"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      )}
-                      
-                      <div className="mt-4 flex items-center justify-between">
-                        <div className="flex items-center space-x-6 text-sm text-gray-600">
-                          <label className="flex items-center space-x-2 cursor-pointer hover:text-blue-600 transition-colors">
-                            <span>📷</span>
-                            <span>Photo</span>
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                              className="hidden"
-                            />
-                          </label>
-                          <label className="flex items-center space-x-2 cursor-pointer hover:text-blue-600 transition-colors">
-                            <span>🎞️</span>
-                            <span>Video</span>
-                            <input
-                              type="file"
-                              accept="video/*"
-                              onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                              className="hidden"
-                            />
-                          </label>
-                        </div>
-                        
-                        <button
-                          onClick={handleCreatePost}
-                          disabled={isPosting || (!newPostText.trim() && !selectedFile)}
-                          className="px-6 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-                        >
-                          {isPosting ? "Posting..." : "Post"}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <CreatePost onPostCreated={handlePostCreated} />
               )}
 
               {/* Posts List */}
@@ -565,6 +491,7 @@ const Profile = () => {
                     post={post} 
                     currentUser={currentUser || { _id: "" }}
                     hideFollowButton={isOwnProfile} // Hide follow button for own posts
+                    onPostDeleted={handlePostDeleted}
                   />
                 ))}
                 {posts.length === 0 && (
